@@ -6,6 +6,8 @@
 
     app.controller('homeController',function($scope, $http, ngTableParams, $timeout, searchService, _, CONFIG){
 
+      $scope.showExportButtons = false;
+
       function init() {
         initializeQuestions();
         initializeDivisions();
@@ -50,13 +52,14 @@
       };
 
       function getResponses(pageNumber) {
-        
+        $scope.showExportButtons = false;
         searchService.getResponses($scope.questionSelected, $scope.divisionSelected, pageNumber, CONFIG.PAGE_SIZE, $scope.filterQuestion, $scope.filterSentiment)
         .success(function(response){
           $scope.result = response.results.result;
           setWordCloudAndPieChart(response);
           $scope.responseTableParams.page(1);
           $scope.responseTableParams.reload();
+          $scope.showExportButtons = true;
         })
         .error(function(err){
           console.log('Error:' + err);
@@ -165,54 +168,61 @@
         });
       };
 
-      $scope.exportPieChartAsImage = function() {
+      $scope.exportPieChartAsImage = function(type) {
 
-        var nodesToRecover = [];
-        var nodesToRemove = [];
+        //var nodesToRecover = [];
+        //var nodesToRemove = [];
+        //
+        //console.log($('#chart'));
+        //
+        //var targetElement = $('#chart').clone(true, true);
+        //
+        //console.log(targetElement);
+        //var svgElem = targetElement.find('svg');
+        //
+        //console.log(svgElem);
+        //
+        //svgElem.each(function(index, node) {
+        //  var parentNode = node.parentNode;
+        //  var svg = parentNode.innerHTML;
+        //
+        //  var canvas = document.createElement('canvas');
+        //
+        //  canvg(canvas, svg);
+        //
+        //  nodesToRecover.push({
+        //    parent: parentNode,
+        //    child: node
+        //  });
+        //  parentNode.removeChild(node);
+        //
+        //  nodesToRemove.push({
+        //    parent: parentNode,
+        //    child: canvas
+        //  });
+        //
+        //  parentNode.appendChild(canvas);
+        //});
+        //
+        //
+        //html2canvas(targetElement).then(function (canvas) {
+        //  //document.body.appendChild(canvas);
+        //  Canvas2Image.convertToPNG(canvas, 500, 500);
+        //}, function (error) {
+        //  console.log(error);
+        //});
 
-        console.log($('#chart'));
 
-        var targetElement = $('#chart').clone(true, true);
+        var myDiv = $('#chart');
+        var blob = new Blob([(new XMLSerializer).serializeToString(myDiv[0])],
+            {type: "image/png;charset=" + document.characterSet});
 
-        console.log(targetElement);
-        var svgElem = targetElement.find('svg');
-
-        console.log(svgElem);
-
-        svgElem.each(function(index, node) {
-          var parentNode = node.parentNode;
-          var svg = parentNode.innerHTML;
-
-          var canvas = document.createElement('canvas');
-
-          canvg(canvas, svg);
-
-          nodesToRecover.push({
-            parent: parentNode,
-            child: node
-          });
-          parentNode.removeChild(node);
-
-          nodesToRemove.push({
-            parent: parentNode,
-            child: canvas
-          });
-
-          parentNode.appendChild(canvas);
-        });
-
-
-        html2canvas(targetElement).then(function (canvas) {
-          document.body.appendChild(canvas);
-          //Canvas2Image.saveAsJPEG(canvas, 300, 300);
-        }, function (error) {
-          console.log(error);
-        });
+        saveAs(blob, "chart.png");
       };
 
-      $scope.exportWordCloudAsImage = function() {
+      $scope.exportWordCloudAsImage = function(type) {
         html2canvas($('#wordCloud')).then(function (canvas) {
-          Canvas2Image.saveAsJPEG(canvas, 300, 300);
+          Canvas2Image.saveAsImage(canvas, 500, 500, type);
         }, function (error) {
           console.log(error);
         });
